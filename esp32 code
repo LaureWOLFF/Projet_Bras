@@ -1,0 +1,66 @@
+#include <WiFi.h>
+
+const char* ssid = "NIRYONED1"; 
+const char* password = "niryorobot";
+
+// Adresse IP du Robot
+const char* host = "10.10.10.10"; 
+const int port = 5005; // Port choisi du serveur Python
+
+const int emgPin = 34; // Broche ADC (Input Only)
+float voltage = 0.0;
+bool hasMoved = false; // Pour éviter de répéter le mouvement
+
+void setup(){
+    Serial.begin(115200);
+    
+    // Configuration ADC
+    analogReadResolution(12); // Résolution 12 bits (0-4095)
+    
+    // Connexion WiFi
+    WiFi.mode(WIFI_STA);
+    WiFi.setMinSecurity(WIFI_AUTH_WPA_PSK); // Assurer connexion robot esp32
+    WiFi.begin(ssid, password);
+    Serial.print("Connexion au WiFi");
+    while(WiFi.status() != WL_CONNECTED){
+        Serial.print(".");
+        delay(500);
+    }
+    Serial.println("\nConnecté !");
+}
+
+void loop(){
+    WiFiClient client;
+    
+    // 1. Lecture de la tension
+    int adcVal = analogRead(emgPin);
+    // Conversion : (valeur / résolution) * tension_ref
+    voltage = (adcVal / 4095.0) * 3.3; 
+    
+    Serial.print("Tension : ");
+    Serial.print(voltage);
+    Serial.println(" V");
+
+    // 2. Logique de déclenchement (> 2V)
+    if (voltage > 2.0 && !hasMoved) {
+        
+        Serial.println("Seuil dépassé ! Connexion au serveur...");
+        
+        if (client.connect(host, port)) {
+            Serial.println("Envoi de l'ordre MOVE");
+            client.print("MOVE"); // Envoi du message simple
+            client.stop();
+            
+            hasMoved = true; // On bloque pour ne pas relancer tant que la tension est haute
+            delay(1000); // Petite pause antibrebond
+        } else {
+            Serial.println("Échec de connexion au Raspberry Pi");
+        }
+    } 
+    else if (voltage < 1.5) {
+        // Reset du flag quand la tension redescend (hystérésis)
+        hasMoved = false;
+    }
+
+    delay(100); // Échantillonnage à 10Hz environ
+}
