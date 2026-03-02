@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import socket
+import rospy
+import time
+from niryo_robot_python_ros_wrapper import *
+
+# --- CONFIGURATION ---
+HOST = '0.0.0.0'  # Écoute partout
+PORT = 5005       # Le même que dans ton ESP32
+
+def run_server():
+    # 1. Initialisation du Robot
+    rospy.init_node('esp32_trigger_listener')
+    print("--- Initialisation du Niryo Ned ---")
+    robot = NiryoRosWrapper()
+    
+    print("Calibration...")
+    robot.calibrate_auto()
+
+    # Définition des positions (en radians)
+    # [Base, Epaule, Coude, Avant-bras, Poignet, Main]
+    pos_repos  = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    pos_action = [0.0, 0.5, -1.2, 0.0, 0.0, 0.0] # Le "Grand Mouvement"
+
+    # 2. Création du Serveur TCP
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((HOST, PORT))
+    s.listen(1)
+
+    print("------------------------------------------------")
+    print("--- PRET ! J'attends le signal 'MOVE' sur 5005 ---")
+    print("------------------------------------------------")
+
+    while not rospy.is_shutdown():
+        try:
+            # Le script se met en pause ici jusqu'à ce que l'ESP32 se connecte
+            conn, addr = s.accept()
+            
+            # On lit le message envoyé par l'ESP32
+            data = conn.recv(1024)
+            
+            if data:
+                # Nettoyage du message (au cas où il y ait des espaces)
+                message = data.decode('utf-8').strip()
+                
+                if "MOVE" in message:
+                    print("\n>>> SIGNAL 'MOVE' REÇU ! (Tension > 2V détectée)")
+                    print(">>> Exécution du mouvement...")
+
+                    try:
+                        # 1. On va à la position d'action
+                        robot.move_joints(*pos_action)
+                        
+                        # 2. On attend un peu (1 seconde)
+                        time.sleep(1.0)
+                        
+                        # 3. On revient à la position de repos
+                        robot.move_joints(*pos_repos)
+                        
+                        print("--- Mouvement terminé, retour en attente ---")
+                        
+                    except Exception as e:
+                        print("Erreur moteur : {}".format(e))
+                else:
+                    print("Message inconnu reçu : {}".format(message))
+
+            conn.close() # On ferme la connexion pour attendre la prochaine
+
+        except socket.error as e:
+            print("Erreur socket : {}".format(e))
+        except KeyboardInterrupt:
+            print("Arrêt du serveur.")
+            break
+            
+    s.close()
+
+if __name__ == '__main__':
+    run_server()
