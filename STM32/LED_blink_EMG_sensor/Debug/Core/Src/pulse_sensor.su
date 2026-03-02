@@ -1,0 +1,2 @@
+../Core/Src/pulse_sensor.c:5:6:PulseSensor_Init	8	static
+../Core/Src/pulse_sensor.c:9:10:PulseSensor_Read	8	static
