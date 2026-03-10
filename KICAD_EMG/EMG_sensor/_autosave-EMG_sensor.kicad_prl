@@ -4,9 +4,7 @@
     "active_layer_preset": "All Layers",
     "auto_track_width": true,
     "hidden_netclasses": [],
-    "hidden_nets": [
-      "Net-(C1-Pad1)"
-    ],
+    "hidden_nets": [],
     "high_contrast_mode": 0,
     "net_color_mode": 1,
     "opacity": {
@@ -60,7 +58,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "EMG_sensor.kicad_prl",
+    "filename": "_autosave-EMG_sensor.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {
