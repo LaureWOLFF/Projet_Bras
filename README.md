@@ -22,7 +22,7 @@ Le projet est actuellement divisé en plusieurs blocs:
 1.  **Étage de Pré-amplification :** Utilisation d'un amplificateur d'instrumentation pour extraire le signal différentiel des électrodes.
 2.  **Filtrage Actif :** Nettoyage du signal pour ne garder que la bande utile de l'EMG.
 3.  **Redresseur de précision :** Conversion du signal alternatif en signal continu (enveloppe de contraction).
-4.  **Adaptation de tension :** Ajustement du signal (initialement ±15V en simulation) vers une plage 0-3.3V compatible avec l'ESP32.
+4.  **Adaptation de tension :** Ajustement du signal vers une plage 0-3.3V compatible avec l'ESP32.
 
 ---
 ## 🤖 Cahine d'information Capteur --> Robot
