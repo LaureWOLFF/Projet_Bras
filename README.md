@@ -27,6 +27,14 @@ Le projet est actuellement divisé en plusieurs blocs:
 ---
 ## 🤖 Cahine d'information Capteur --> Robot
 
+Pour piloter le robot, l'information circule à travers les étapes suivantes :
+
+1. **Acquisition :** Captation des micro-tensions sur la peau via les électrodes.
+2. **Traitement Analogique :** Traitement via le capteur EMG.
+3. **Numérisation :** L'ESP32 convertit le signal analogique en données numériques via son ADC.
+4. **Interprétation :** Analyse du seuil de tension pour détecter une contraction ou un relâchement.
+5. **Communication :** Envoi des commandes via Bluetooth/Wi-Fi vers le système de contrôle du robot.
+6. **Actionnement  :** Le robot exécute le mouvement correspondant (ex: fermeture de la pince).
 
 ---
 ## 🚀 État d'avancement à la mi-parcours (S7)
