@@ -25,7 +25,7 @@ Le projet est actuellement divisé en plusieurs blocs:
 4.  **Adaptation de tension :** Ajustement du signal (initialement ±15V en simulation) vers une plage 0-3.3V compatible avec l'ESP32.
 
 ---
-## 🏗 Cahine d'information Capteur --> Robot
+## 🤖 Cahine d'information Capteur --> Robot
 
 
 ---
