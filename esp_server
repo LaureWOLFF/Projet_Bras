@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import socket
+import rospy
+from niryo_robot_python_ros_wrapper import *
+
+HOST = '0.0.0.0'
+PORT = 5005
+
+def run_gripper_server():
+    # 1. Initialisation de ROS et du robot
+    rospy.init_node('esp32_gripper_listener')
+    robot = NiryoRosWrapper()
+    
+    print("--- Calibration en cours ---")
+    robot.calibrate_auto()
+
+    # 2. Préparation de la pince
+    # La fonction attend une vitesse (ex: 500) au lieu d'un nom
+    print("Ouverture initiale de la pince...")
+    try:
+        robot.open_gripper(500)
+    except Exception as e:
+        print("Avertissement pince : {}".format(e))
+
+    # 3. Création du serveur d'écoute
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((HOST, PORT))
+    s.listen(1)
+    s.settimeout(0.5)
+
+    print("-------------------------------------------------")
+    print("--- PRÊT ! J'attends les ordres OPEN ou CLOSE ---")
+    print("-------------------------------------------------")
+ #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import socket
+import rospy
+from niryo_robot_python_ros_wrapper import *
+
+HOST = '0.0.0.0'
+PORT = 5005
+
+def run_gripper_server():
+    # 1. Initialisation de ROS et du robot
+    rospy.init_node('esp32_gripper_listener')
+    robot = NiryoRosWrapper()
+    
+    print("--- Calibration en cours ---")
+    robot.calibrate_auto()
+
+    # 2. Préparation de la pince
+    # La fonction attend une vitesse (ex: 500) au lieu d'un nom
+    print("Ouverture initiale de la pince...")
+    try:
+        robot.open_gripper(500)
+    except Exception as e:
+        print("Avertissement pince : {}".format(e))
+
+    # 3. Création du serveur d'écoute
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((HOST, PORT))
+    s.listen(1)
+    s.settimeout(0.5)
+
+    print("-------------------------------------------------")
+    print("--- PRÊT ! J'attends les ordres OPEN ou CLOSE ---")
+    print("-------------------------------------------------")
+
+    # 4. Boucle principale
+    while not rospy.is_shutdown():
+        try:
+            conn, addr = s.accept()
+            data = conn.recv(1024)
+
+            if data:
+                msg = data.decode('utf-8').strip()
+
+                if "CLOSE" in msg:
+                    print("Ordre REÇU : FERMER LA PINCE")
+                    # On ferme avec une vitesse de 500
+                    robot.close_gripper(500)
+
+                elif "OPEN" in msg:
+                    print("Ordre REÇU : OUVRIR LA PINCE")
+                    # On ouvre avec une vitesse de 500
+                    robot.open_gripper(500)
+
+            conn.close()
+
+        except socket.timeout:
+            continue
+        except Exception as e:
+            print("Erreur de réception ou de mouvement : {}".format(e))
+
+if __name__ == '__main__':
+    run_gripper_server()
